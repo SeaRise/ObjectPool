@@ -18,8 +18,7 @@ public class DefaultObjectPool<T> extends LocalObjectPool<T> {
 	
 	public DefaultObjectPool(int size, ObjectFactory<T> objectFactory, Validator<T> validator) {
 		super(size, objectFactory, validator);
-		int ratio =  Thread.activeCount()-2;
-		abandonedPool = new WeakReferencePool<T>(size*ratio);
+		abandonedPool = new WeakReferencePool<T>(size);
 	}
 	
 	@Override
