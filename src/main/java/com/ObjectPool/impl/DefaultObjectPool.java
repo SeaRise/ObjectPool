@@ -1,88 +1,35 @@
 package com.ObjectPool.impl;
 
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import com.ObjectPool.BaseObjectPool;
 import com.ObjectPool.ObjectFactory;
+import com.ObjectPool.ObjectPool;
+import com.ObjectPool.Validator;
 
-public class DefaultObjectPool<T> extends BaseObjectPool<T> {
+/*这个是默认的对象池实现
+ * 空闲池是LocalObjectPool
+ * 废弃池是WeakReferencePool
+ * **/
+public class DefaultObjectPool<T> extends LocalObjectPool<T> {
 
-	private ThreadLocal<Deque<T>> objects = null;
-	
-	private ObjectFactory<T> objectFactory = null;
-	
-	private volatile boolean isClosed;
-	
-	//这个是每个线程私有对象池的大小,而不是整个对象池的大小
-	private int localSize;
+	private ObjectPool<T> abandonedPool = null;
 	
 	public DefaultObjectPool(int size, ObjectFactory<T> objectFactory) {
-		super();
-		this.localSize = size;
-		this.objectFactory = objectFactory;
-		objects = new ThreadLocal<Deque<T>>();
+		this(size, objectFactory, new DefaultValidator<T>());
 	}
 	
-	public T get() {
-		checkClose();
-		Deque<T> localObjects = objects.get();
-		if (null == localObjects) {
-			localObjects = new ArrayDeque<T>(localSize);
-			objects.set(localObjects);
-			return objectFactory.createNew();
-		}
-		
-		T object = localObjects.pollFirst();
-		return null == object? objectFactory.createNew() : object;
+	public DefaultObjectPool(int size, ObjectFactory<T> objectFactory, Validator<T> validator) {
+		super(size, objectFactory, validator);
+		int ratio =  Thread.activeCount()-2;
+		abandonedPool = new WeakReferencePool<T>(size*ratio);
 	}
 	
-	public void release(T t) {
-		if (!isClosed) {
-			super.release(t);
-		}
-	}
-
-	private void checkClose() {
-		if (isClosed) {
-			throw new IllegalStateException("Object pool is already shutdown");
-		}
-	}
-	
-	public void close() throws IOException {
-		isClosed = false;
-		objectFactory = null;
-		objects = null;
-	}
-
 	@Override
-	protected boolean isValid(T t) {
-		return true;
-	}
-
-	@Override
-	protected void invalidate(T t) {
-		
-	}
-
-	@Override
-	protected void returnToPool(T t) {
-		Deque<T> localObjects = objects.get();
-		
-		if (null == localObjects) {
-			localObjects = new ArrayDeque<T>(localSize);
-			objects.set(localObjects);
-		}
-		
-		if (localSize == localObjects.size()) {
-			return;
-		}
-		
-		localObjects.offerLast(t);
+	protected T createNew() {
+		T object = abandonedPool.get();
+		return null == object ? super.createNew() : object;
 	}
 	
-	public int getLocalSize() {
-		return localSize;
+	@Override
+	protected void abandonObject(T t) {
+		abandonedPool.release(t);
 	}
 }
