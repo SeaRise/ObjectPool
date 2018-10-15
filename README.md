@@ -1,0 +1,6 @@
+- 一个简易的对象池实现
+- commons-pool是用阻塞队列LinkedBlockingDeque实现线程池
+	- LinkedBlockingDeque用lock和condition实现的,存在锁竞争问题.
+- 考虑用每个线程维持自己的私有对象池,类似ThreadLocal的实现,这样就不存在锁竞争问题
+	- 个人感觉这样实现的前提条件是对象资源比线程多的多.
+	- 其次,线程的运行使用线程池,不然私有对象池代价太大.
