@@ -17,8 +17,12 @@ public class DefaultObjectPool<T> extends LocalObjectPool<T> {
 	}
 	
 	public DefaultObjectPool(int size, ObjectFactory<T> objectFactory, Validator<T> validator) {
-		super(size, objectFactory, validator);
-		abandonedPool = new WeakReferencePool<T>(size);
+		this(size, size, objectFactory, validator);
+	}
+	
+	public DefaultObjectPool(int localSize, int abandonedSize, ObjectFactory<T> objectFactory, Validator<T> validator) {
+		super(localSize, objectFactory, validator);
+		abandonedPool = new WeakReferencePool<T>(abandonedSize);
 	}
 	
 	@Override
