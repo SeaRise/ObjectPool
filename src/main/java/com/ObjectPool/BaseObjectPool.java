@@ -11,6 +11,10 @@ public abstract class BaseObjectPool<T> implements ObjectPool<T>{
 	private volatile boolean isClosed = false;
 	
 	public void release(T t) {
+		if (isClosed()) {
+			return;
+		}
+		
 		if (validator.isValid(t)) {
 			returnToPool(t);
 		} else {
@@ -23,11 +27,17 @@ public abstract class BaseObjectPool<T> implements ObjectPool<T>{
 		closeResource();
 	}
 	
+	protected void checkClose() {
+		if (isClosed()) {
+			throw new IllegalStateException("Object pool is already closed");
+		}
+	}
+	
 	protected boolean isClosed() {
 		return isClosed;
 	}
 	
-	protected void closeResource() {
+	protected void closeResource() throws IOException {
 		validator = null;
 	}
 	

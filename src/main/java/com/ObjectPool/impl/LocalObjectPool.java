@@ -1,5 +1,6 @@
 package com.ObjectPool.impl;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -43,20 +44,6 @@ public class LocalObjectPool<T> extends BaseObjectPool<T> {
 		return null == object? createNew() : object;
 	}
 	
-	public void release(T t) {
-		if (isClosed()) {
-			return;
-		}
-		
-		super.release(t);
-	}
-
-	private void checkClose() {
-		if (isClosed()) {
-			throw new IllegalStateException("Object pool is already closed");
-		}
-	}
-
 	@Override
 	protected void returnToPool(T t) {
 		Deque<T> localObjects = objects.get();
@@ -87,7 +74,7 @@ public class LocalObjectPool<T> extends BaseObjectPool<T> {
 	}
 
 	@Override
-	protected void closeResource() {
+	protected void closeResource() throws IOException {
 		super.closeResource();
 		objects = null;
 		objectFactory = null;

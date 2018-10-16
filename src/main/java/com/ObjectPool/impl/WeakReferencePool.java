@@ -14,6 +14,7 @@ import com.ObjectPool.Validator;
  * 
  * 我觉得可以试一下用反射,不要每次都要new WeakReference,代价太大
  * 经过试验,WeakReference只能被回收一次,但是如果null == referent,就不会被回收
+ * 搞得太复杂,算了
  * */
 public class WeakReferencePool<T> extends BaseObjectPool<T> {
 	
@@ -48,6 +49,7 @@ public class WeakReferencePool<T> extends BaseObjectPool<T> {
 	}
 	
 	public T get() {
+		checkClose();
 		return objects[getIndex()].get();
 	}
 

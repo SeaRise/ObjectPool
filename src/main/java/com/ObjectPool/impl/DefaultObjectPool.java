@@ -1,5 +1,7 @@
 package com.ObjectPool.impl;
 
+import java.io.IOException;
+
 import com.ObjectPool.ObjectFactory;
 import com.ObjectPool.ObjectPool;
 import com.ObjectPool.Validator;
@@ -34,5 +36,12 @@ public class DefaultObjectPool<T> extends LocalObjectPool<T> {
 	@Override
 	protected void abandonObject(T t) {
 		abandonedPool.release(t);
+	}
+	
+	@Override
+	protected void closeResource() throws IOException {
+		super.closeResource();
+		abandonedPool.close();
+		abandonedPool = null;
 	}
 }
