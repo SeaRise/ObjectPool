@@ -10,9 +10,9 @@ import com.ObjectPool.Validator;
  * 空闲池是LocalObjectPool
  * 废弃池是WeakReferencePool
  * **/
-public class DefaultObjectPool<T> extends LocalObjectPool<T> {
+public class DefaultObjectPool<T> extends LocalObjectPool<T> implements ObjectPool<T> {
 
-	private ObjectPool<T> abandonedPool = null;
+private ObjectPool<T> abandonedPool = null;
 	
 	public DefaultObjectPool(int size, ObjectFactory<T> objectFactory) {
 		this(size, objectFactory, new DefaultValidator<T>());

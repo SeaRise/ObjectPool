@@ -6,11 +6,12 @@ import java.util.Deque;
 
 import com.ObjectPool.BaseObjectPool;
 import com.ObjectPool.ObjectFactory;
+import com.ObjectPool.ObjectPool;
 import com.ObjectPool.Validator;
 
 /*这个是线程私有对象池实现
  * **/
-public class LocalObjectPool<T> extends BaseObjectPool<T> {
+public class LocalObjectPool<T> extends BaseObjectPool<T> implements ObjectPool<T> {
 	
 	private ThreadLocal<Deque<T>> objects = null;
 	

@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.ObjectPool.BaseObjectPool;
+import com.ObjectPool.ObjectPool;
 import com.ObjectPool.Validator;
 
 /*这个弱引用的对象池实现,目的是用来存储被线程私有对象池丢弃的对象
@@ -16,7 +17,7 @@ import com.ObjectPool.Validator;
  * 经过试验,WeakReference只能被回收一次,但是如果null == referent,就不会被回收
  * 搞得太复杂,算了
  * */
-public class WeakReferencePool<T> extends BaseObjectPool<T> {
+public class WeakReferencePool<T> extends BaseObjectPool<T> implements ObjectPool<T> {
 	
 	private int size;
 	
@@ -76,9 +77,12 @@ public class WeakReferencePool<T> extends BaseObjectPool<T> {
 			int count = MAX_SCAN_RETRIES;
 			while(--count >= 0) {
 				if (tryLock()) {
-					setReference(t);
-					unlock();
-					return;
+					try {
+						setReference(t);
+						return;
+					} finally {
+						unlock();
+					}
 				}
 			}
 		}
@@ -87,9 +91,12 @@ public class WeakReferencePool<T> extends BaseObjectPool<T> {
 			int count = MAX_SCAN_RETRIES;
 			while(--count >= 0) {
 				if (tryLock()) {
-					T t = getReference();
-					unlock();
-					return t;
+					try {
+						T t = getReference();
+						return t;
+					} finally {
+						unlock();
+					}
 				}
 			}
 			
