@@ -1,7 +1,7 @@
 package com.ObjectPool.impl;
 
 import java.lang.ref.WeakReference;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.ObjectPool.BaseObjectPool;
@@ -22,8 +22,6 @@ public class WeakReferencePool<T> extends BaseObjectPool<T> implements ObjectPoo
 	private int size;
 	
 	private Entry<T>[] objects = null;
-
-	private Random random = null;
 	
 	//cpu核数,用于自旋
 	static final int MAX_SCAN_RETRIES =
@@ -37,7 +35,6 @@ public class WeakReferencePool<T> extends BaseObjectPool<T> implements ObjectPoo
 		super();
 		this.size = size;
 		this.validator = validator;
-		random = new Random();
 		initObjects();
 	}
 	
@@ -62,11 +59,10 @@ public class WeakReferencePool<T> extends BaseObjectPool<T> implements ObjectPoo
 	@Override
 	protected void closeResource() {
 		objects = null;
-		random = null;
 	}
 	
 	private int getIndex() {
-		return random.nextInt(size);
+		return ThreadLocalRandom.current().nextInt(size);
 	}
 	
 	@SuppressWarnings({ "serial" })
